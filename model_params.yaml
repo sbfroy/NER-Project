@@ -1,8 +1,13 @@
+data:
+  
+
+model:
+  model_name: 'google-bert/bert-base-uncased'
 
 
-
-
-
+training:
+  batch_size: 32
+  num_epochs: 3
 
 
 general:
