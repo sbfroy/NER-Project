@@ -1,11 +1,14 @@
 import torch.nn as nn
 from transformers import AutoModelForTokenClassification, AutoConfig
 
+# TODO: Make the model better!
+# TODO: Understand the loss metrics
+
 class BERT(nn.Module):
     def __init__(self, model_name, num_labels):
         super(BERT, self).__init__()
         self.config = AutoConfig.from_pretrained(model_name, num_labels=num_labels)
-        print(self.config)
+        #print(self.config)
         self.transformer = AutoModelForTokenClassification.from_pretrained(model_name, config=self.config)
 
     def forward(self, input_ids, attention_mask, labels):
