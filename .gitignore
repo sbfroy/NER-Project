@@ -2,3 +2,4 @@
 #/dat304_bachelor_project.egg-info
 *.pyc
 __pycache__/
+*.pth
