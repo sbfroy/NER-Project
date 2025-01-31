@@ -1,1 +1,3 @@
 conllu
+torch
+transformers
