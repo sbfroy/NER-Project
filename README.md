@@ -1,1 +1,1 @@
-# TODO: Make emy own dataset. How should i finetune the model on as little data as possible?
+# TODO: Make my own dataset with labelstudio. The data need to be in conllu format. How should i finetune the model on as little data as possible?
