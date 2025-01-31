@@ -1,0 +1,1 @@
+# TODO: Make emy own dataset. How should i finetune the model on as little data as possible?
