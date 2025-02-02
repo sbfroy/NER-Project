@@ -5,6 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import torch
 import torch.optim as optim
+import pandas as pd
 from pathlib import Path
 from transformers import AutoTokenizer
 from src.data.dataset import Dataset
@@ -14,6 +15,8 @@ from src.utils.label_mapping import label_to_id
 from src.utils.seed import seed_everything
 from src.models.transformer_model import TransformerModel
 from src.training.train import train_model
+from datetime import datetime
+import yaml
 
 base_dir = Path(__file__).parent.parent
 
@@ -46,4 +49,14 @@ history = train_model(
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 )
 
-torch.save(model.state_dict(), base_dir / 'src/models/transformer_model.pth')
+# Store data in individual folders
+timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+output_dir = base_dir / 'logs' / f'run_{timestamp}'
+output_dir.mkdir(parents=True, exist_ok=True)
+
+with open(output_dir / 'params.yaml', 'w') as f:
+    yaml.dump(config, f)
+
+pd.DataFrame(history).to_csv(output_dir / 'history.csv', index=False)
+
+torch.save(model.state_dict(), output_dir / 'transformer_model.pth')
