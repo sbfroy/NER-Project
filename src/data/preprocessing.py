@@ -8,7 +8,7 @@ def create_df(file_path):
 
     """
     Reads a CONLL-U formatted file, extracts words and enitity labels, 
-    and returns a df with the data.
+    and returns a df with the words and labels for each sentence.
     """
 
     # Open and read the CoNLL-U file
@@ -19,7 +19,7 @@ def create_df(file_path):
 
     for sentence in sentences:
 
-        # TODO: Add some error handling if misisng data
+        # TODO: Add some error handling if missing data
 
         words = [word['form'] for word in sentence] # Extract the words
         labels = [word['misc']['name'] for word in sentence] # Extract the entity labels
