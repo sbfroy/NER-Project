@@ -1,3 +1,4 @@
 conllu
 torch
 transformers
+scikit-learn
