@@ -1,14 +1,15 @@
-data:
-  
-
 model:
-  model_name: 'google-bert/bert-base-uncased'
-
+  model_name: 'ltg/norbert3-base' # 'google-bert/bert-base-uncased'
+  dropout: 0.45 # 0.15
 
 training:
   batch_size: 32
-  num_epochs: 3
+  num_epochs: 10
+  learning_rate: 0.00003
 
+data:
+  max_seq_len: 69
+  
 
 general:
   seed: 42
