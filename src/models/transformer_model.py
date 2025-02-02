@@ -6,9 +6,9 @@ from transformers import AutoModelForTokenClassification, AutoConfig
 class TransformerModel(nn.Module):
     def __init__(self, model_name, num_labels):
         super(TransformerModel, self).__init__()
-        self.config = AutoConfig.from_pretrained(model_name, num_labels=num_labels, trust_remote_code=True)
+        self.config = AutoConfig.from_pretrained(model_name, num_labels=num_labels)
         #print(self.config)
-        self.transformer = AutoModelForTokenClassification.from_pretrained(model_name, config=self.config, trust_remote_code=True)
+        self.transformer = AutoModelForTokenClassification.from_pretrained(model_name, config=self.config)
 
     def forward(self, input_ids, attention_mask, labels):
         # Calculates the loss (cross-entropy) when labels is provided.
