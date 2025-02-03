@@ -1,19 +1,17 @@
 import torch.nn as nn
 from transformers import AutoModelForTokenClassification, AutoConfig
 
-# TODO: Implement a dropout layer if overfitting.
-
 class TransformerModel(nn.Module):
-    def __init__(self, model_name, num_labels):
+    def __init__(self, model_name, num_labels, dropout):
         super(TransformerModel, self).__init__()
         self.config = AutoConfig.from_pretrained(model_name, num_labels=num_labels)
-        #print(self.config)
         self.transformer = AutoModelForTokenClassification.from_pretrained(model_name, config=self.config)
+
+        if hasattr(self.transformer, 'dropout'):
+            # Input to classifiaction head
+            self.transformer.dropout.p = dropout
 
     def forward(self, input_ids, attention_mask, labels):
         # Calculates the loss (cross-entropy) when labels is provided.
         outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
         return outputs
-
-
-
