@@ -49,16 +49,18 @@ def inference(sentence):
     return list(zip(tokens, predicted_labels))
 
 # Get text from pdf
-pdf_text = []
+#pdf_text = []
 reader = PdfReader(base_dir / 'data/pdfs/EH_detaljregulering_for_kjetså_massetak.pdf')
-for page in reader.pages:
+"""for page in reader.pages[1]:
     text = page.extract_text()
-    pdf_text.append(text)
+    pdf_text.append(text)"""
+page = reader.pages[1]
+pdf_text = page.extract_text()
 
-pdf_text = " ".join(pdf_text)
+"pdf_text = " ".join(pdf_text)"
 all_sentences = pdf_text.split('.')
 
-for sentence in all_sentences[100:120]:
+for sentence in all_sentences:
     predictions = inference(sentence)
 
     print("\n Predictions: ")
