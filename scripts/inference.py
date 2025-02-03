@@ -61,6 +61,6 @@ all_sentences = pdf_text.split('.')
 for sentence in all_sentences[100:120]:
     predictions = inference(sentence)
 
-    print("\n Predictions:")
+    print("\n Predictions: ")
     for token, label in predictions:
         print(f"{token} --> {label}")
