@@ -1,5 +1,5 @@
 model:
-  model_name: 'NbAiLab/nb-bert-base' # 'ltg/norbert2' # 'google-bert/bert-base-uncased'
+  model_name: 'NbAiLab/nb-bert-base' # 'ltg/norbert2'
   dropout: 0.1 # 0.45 
 
 training:
