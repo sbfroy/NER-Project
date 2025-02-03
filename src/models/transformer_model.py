@@ -2,7 +2,7 @@ import torch.nn as nn
 from transformers import AutoModelForTokenClassification, AutoConfig
 
 class TransformerModel(nn.Module):
-    def __init__(self, model_name, num_labels, dropout):
+    def __init__(self, model_name, dropout, num_labels):
         super(TransformerModel, self).__init__()
         self.config = AutoConfig.from_pretrained(model_name, num_labels=num_labels)
         self.transformer = AutoModelForTokenClassification.from_pretrained(model_name, config=self.config)
