@@ -26,7 +26,11 @@ seed_everything(config['general']['seed'])
 
 tokenizer = AutoTokenizer.from_pretrained(config['model']['model_name'])
 
-model = TransformerModel(model_name=config['model']['model_name'], num_labels=len(label_to_id))
+model = TransformerModel(
+    model_name=config['model']['model_name'], 
+    dropout=config['model']['dropout'],
+    num_labels=len(label_to_id)
+)
 
 # Data loading
 train_df = create_df(base_dir / 'data/norne/ud/nob/no_bokmaal-ud-train.conllu')
