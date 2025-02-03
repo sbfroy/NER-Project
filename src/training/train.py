@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report
-import numpy as np
+from sklearn.metrics import classification_report
 from tqdm import tqdm
 
 def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device):
@@ -15,10 +14,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
     history = {
         'train_loss': [],
         'val_loss': [],
-        'accuracy': [],
-        'precision': [],
-        'recall': [],
-        'f1_score': []
+        'class_report': []
     }
 
     for epoch in range(num_epochs):
@@ -34,7 +30,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
             labels = batch['labels'].to(device)
 
             optimizer.zero_grad()
-            outputs = model(inputs, masks, labels)
+            outputs = model(inputs, masks, labels) # Forward pass
             loss = outputs.loss
             loss.backward()
             optimizer.step()
@@ -46,8 +42,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         model.eval() ## evaluation mode ##
 
         val_loss = 0
-        all_preds = []
-        all_labels = []
+        all_preds, all_labels = [], []
 
         with torch.no_grad():
             for batch in tqdm(val_loader, desc='val', leave=False, ncols=75):
@@ -60,13 +55,13 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 loss = outputs.loss
                 logits = outputs.logits
 
-                preds = torch.argmax(logits, dim=-1)
-                preds = preds.view(-1).cpu().numpy()
+                preds = torch.argmax(logits, dim=-1) # Get the most likely entity class idx
+                preds = preds.view(-1).cpu().numpy() # Flatten the tensor
                 labels = labels.view(-1).cpu().numpy()
 
-                valid_indices = labels != -100
-                preds = preds[valid_indices]
-                labels = labels[valid_indices]
+                # Filter out -100 tokens
+                preds = preds[labels != -100]
+                labels = labels[labels != -100]
 
                 all_preds.extend(preds)
                 all_labels.extend(labels)
@@ -74,25 +69,20 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 val_loss += loss.item()
         
         val_loss /= len(val_loader)
-        accuracy = accuracy_score(all_labels, all_preds)
-        precision, recall, f1, _ = precision_recall_fscore_support(all_labels, all_preds, average='weighted', zero_division=np.nan)
-
-        # TODO: Make the metrics better
 
         history['train_loss'].append(train_loss)
         history['val_loss'].append(val_loss)
-        history['accuracy'].append(accuracy)
-        history['precision'].append(precision)
-        history['recall'].append(recall)
-        history['f1_score'].append(f1)
+
+        class_report = classification_report(
+            all_labels, all_preds, zero_division=0, digits=4, output_dict=True
+        )
+        history['class_report'].append(class_report)
 
         print(f'Epoch {epoch+1}/{num_epochs} | '
-              f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
-              f'Acc: {accuracy:.4f}, Prec: {precision:.4f}, '
-              f'Rec: {recall:.4f}, F1: {f1:.4f}')
+              f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}')
         
-        print("\n Classification Report:")
-        print(classification_report(all_labels, all_preds, zero_division=0, digits=4))
+    print("\n Final classification report:")
+    print(classification_report(all_labels, all_preds, zero_division=0, digits=4))
     
     print('Training says SUUIII!')
 
