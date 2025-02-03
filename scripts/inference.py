@@ -58,7 +58,7 @@ for page in reader.pages:
 pdf_text = " ".join(pdf_text)
 all_sentences = pdf_text.split('.')
 
-for sentence in all_sentences[:10]:
+for sentence in all_sentences[100:120]:
     predictions = inference(sentence)
 
     print("\n Predictions:")
