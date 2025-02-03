@@ -1,6 +1,6 @@
 model:
   model_name: 'NbAiLab/nb-bert-base' # 'ltg/norbert2' # 'google-bert/bert-base-uncased'
-  dropout: 0.1 # 0.45 # 0.15
+  dropout: 0.1 # 0.45 
 
 training:
   batch_size: 32
@@ -8,9 +8,8 @@ training:
   learning_rate: 0.00005
 
 data:
-  max_seq_len: 40
+  max_seq_len: 52
   
-
 general:
   seed: 42
   
