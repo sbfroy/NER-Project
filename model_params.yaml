@@ -10,7 +10,6 @@ training:
 data:
   max_seq_len: 40
   
-
 general:
   seed: 42
   

@@ -1,9 +1,12 @@
 import torch
 from transformers import AutoTokenizer
-from src.models.BERT_model import BERT
+from src.models.transformer_model import TransformerModel
 from src.utils.config_loader import load_config
 from src.utils.label_mapping import label_to_id, id_to_label
 from pathlib import Path
+from pypdf import PdfReader
+
+# TODO: Run a whole pdf on this
 
 base_dir = Path(__file__).parent.parent
 
@@ -13,7 +16,11 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 tokenizer = AutoTokenizer.from_pretrained(config['model']['model_name'])
 
-model = BERT(model_name=config['model']['model_name'], num_labels=len(label_to_id))
+model = TransformerModel(
+    model_name=config['model']['model_name'], 
+    dropout=config['model']['dropout'],
+    num_labels=len(label_to_id)
+)
 
 model.load_state_dict(torch.load(base_dir / 'src' /'models' / 'transformer_model.pth', map_location=device)) 
 model.to(device)
@@ -25,14 +32,13 @@ def inference(sentence):
                          return_tensors="pt", 
                          padding="max_length", 
                          truncation=True, 
-                         max_length=69)
+                         max_length=config['data']['max_seq_len'])
 
     input_ids = encoding["input_ids"].to(device)
     attention_mask = encoding["attention_mask"].to(device)
 
     with torch.no_grad():
         outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=None)
-
 
     predictions = torch.argmax(outputs.logits, dim=-1).squeeze(0).tolist()
     
@@ -42,11 +48,19 @@ def inference(sentence):
 
     return list(zip(tokens, predicted_labels))
 
+# Get text from pdf
+pdf_text = []
+reader = PdfReader(base_dir / 'data/pdfs/EH_detaljregulering_for_kjetså_massetak.pdf')
+for page in reader.pages:
+    text = page.extract_text()
+    pdf_text.append(text)
 
-sentence = 'Ole bor i Kristiansand, og Are bor i Vennesla'
+pdf_text = " ".join(pdf_text)
+all_sentences = pdf_text.split('.')
 
-predictions = inference(sentence)
+for sentence in all_sentences[:10]:
+    predictions = inference(sentence)
 
-print("\nPredictions:")
-for token, label in predictions:
-    print(f"{token} --> {label}")
+    print("\n Predictions:")
+    for token, label in predictions:
+        print(f"{token} --> {label}")

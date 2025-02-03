@@ -1,9 +1,0 @@
-README.md
-setup.py
-dat304_bachelor_project.egg-info/PKG-INFO
-dat304_bachelor_project.egg-info/SOURCES.txt
-dat304_bachelor_project.egg-info/dependency_links.txt
-dat304_bachelor_project.egg-info/top_level.txt
-src/__init__.py
-src/data/__init__.py
-src/data/preprocessing.py

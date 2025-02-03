@@ -1,0 +1,6 @@
+README.md
+setup.py
+ner_project.egg-info/PKG-INFO
+ner_project.egg-info/SOURCES.txt
+ner_project.egg-info/dependency_links.txt
+ner_project.egg-info/top_level.txt
