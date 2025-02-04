@@ -5,8 +5,8 @@ from src.utils.label_mapping import id_to_label
 from tqdm import tqdm
 import optuna
 
-def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, 
-                verbose=True, trial=None):
+def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, trial=None,
+                verbose=True):
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
