@@ -1,9 +1,12 @@
 import torch
 from torch.utils.data import DataLoader
 from sklearn.metrics import classification_report
+from src.utils.label_mapping import id_to_label
 from tqdm import tqdm
+import optuna
 
-def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device):
+def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, 
+                verbose=True, trial=None):
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -23,7 +26,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
 
         train_loss = 0
 
-        for batch in tqdm(train_loader, desc='train', leave=False, ncols=75):
+        for batch in tqdm(train_loader, desc='train', leave=False, ncols=75, disable=not verbose):
 
             inputs = batch['input_ids'].to(device)
             masks = batch['attention_mask'].to(device)
@@ -33,7 +36,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
             outputs = model(inputs, masks, labels) # Forward pass
             loss = outputs.loss
             loss.backward()
-            optimizer.step()
+            optimizer.step()  
 
             train_loss += loss.item()
         
@@ -45,7 +48,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         all_preds, all_labels = [], []
 
         with torch.no_grad():
-            for batch in tqdm(val_loader, desc='val', leave=False, ncols=75):
+            for batch in tqdm(val_loader, desc='val', leave=False, ncols=75, disable=not verbose):
 
                 inputs = batch['input_ids'].to(device)
                 masks = batch['attention_mask'].to(device)
@@ -73,17 +76,29 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         history['train_loss'].append(train_loss)
         history['val_loss'].append(val_loss)
 
+        # ids to labels
+        all_labels = [id_to_label[label] for label in all_labels] 
+        all_preds = [id_to_label[pred] for pred in all_preds] 
+
         class_report = classification_report(
             all_labels, all_preds, zero_division=0, digits=4, output_dict=True
         )
         history['class_report'].append(class_report)
 
-        print(f'Epoch {epoch+1}/{num_epochs} | '
-              f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}')
-        
-    print("\n Final classification report:")
-    print(classification_report(all_labels, all_preds, zero_division=0, digits=4))
-    
-    print('Training says SUUIII!')
+        if verbose:
+            print(f'Epoch {epoch+1}/{num_epochs} | '
+                f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}')
+
+    if verbose:       
+        print("\n Final classification report:")
+        print(classification_report(all_labels, all_preds, zero_division=0, digits=4))
+
+        print('Training says SUUIII!')
+
+    # Optuna
+    if trial:
+        trial.report(val_loss, step=epoch)
+        if trial.should_prune():
+            raise optuna.exceptions.TrialPruned()
 
     return history
