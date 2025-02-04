@@ -55,7 +55,9 @@ def objective(trial):
         optimizer = optimizer,
         batch_size = batch_size,
         num_epochs = config['training']['num_epochs'],
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = 'cuda' if torch.cuda.is_available() else 'cpu',
+        trial=trial,
+        verbose=False
     )
 
     best_val_loss = min(history['val_loss'])
