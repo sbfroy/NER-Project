@@ -4,7 +4,7 @@ model:
 
 training:
   batch_size: 32
-  num_epochs: 5
+  num_epochs: 2
   learning_rate: 3.3789593885367876e-05
 
 data:
