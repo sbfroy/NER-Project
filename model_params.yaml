@@ -3,9 +3,16 @@ model:
   dropout: 0.45 
 
 training:
-  batch_size: 32
-  num_epochs: 2
-  learning_rate: 3.3789593885367876e-05
+
+  general:
+    batch_size: 32
+    num_epochs: 2
+    learning_rate: 3.3789593885367876e-05
+
+  transfer:
+    batch_size: 14
+    num_epochs: 5
+    learning_rate: 3.3789593885367876e-06
 
 data:
   max_seq_len: 52
