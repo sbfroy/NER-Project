@@ -66,3 +66,6 @@ for sentence in all_sentences:
     print("\n Predictions: ")
     for token, label in predictions:
         print(f"{token} --> {label}")
+
+
+# TODO: Make a inference script that takes in a pdf and returns the FELT the model finds.
