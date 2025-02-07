@@ -1,1 +1,5 @@
-# TODO: Make my own dataset with labelstudio. The data need to be in conllu format. How should i finetune the model on as little data as possible?
+# TODO: Check metrics.
+
+# TODO: Train on data. Compare a model that is first finetuned on generel NER vs. only trained on general NER.
+
+# TODO: Test if I should freeze ?
