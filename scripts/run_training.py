@@ -32,6 +32,8 @@ model = TransformerModel(
     num_labels=len(label_to_id)
 )
 
+# TODO: Should I freeze some layers here too? 
+
 # Data loading
 train_df = create_df(base_dir / 'data/norne/ud/nob/no_bokmaal-ud-train.conllu')
 val_df = create_df(base_dir / 'data/norne/ud/nob/no_bokmaal-ud-dev.conllu')
