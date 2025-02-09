@@ -28,11 +28,13 @@ model.eval()
 
 def inference(sentence):
 
-    encoding = tokenizer(sentence, 
-                         return_tensors="pt", 
-                         padding="max_length", 
-                         truncation=True, 
-                         max_length=config['data']['max_seq_len'])
+    encoding = tokenizer(
+        sentence, 
+        return_tensors="pt", 
+        padding="max_length", 
+        truncation=True, 
+        max_length=config['data']['max_seq_len']
+        )
 
     input_ids = encoding["input_ids"].to(device)
     attention_mask = encoding["attention_mask"].to(device)
@@ -50,10 +52,10 @@ def inference(sentence):
 
 # Get text from pdf
 #pdf_text = []
-reader = PdfReader(base_dir / 'data/pdfs/EH_detaljregulering_for_kjetså_massetak.pdf')
-"""for page in reader.pages[1]:
+"""reader = PdfReader(base_dir / 'data/pdfs/EH_detaljregulering_for_kjetså_massetak.pdf')
+for page in reader.pages[1]:
     text = page.extract_text()
-    pdf_text.append(text)"""
+    pdf_text.append(text)
 page = reader.pages[1]
 pdf_text = page.extract_text()
 
@@ -66,6 +68,12 @@ for sentence in all_sentences:
     print("\n Predictions: ")
     for token, label in predictions:
         print(f"{token} --> {label}")
+"""
 
+predictions = inference("f_BLK er felles lekeplass for BKS1-6 og BB1.")
+
+print("\n Predictions: ")
+for token, label in predictions:
+    print(f"{token} --> {label}")
 
 # TODO: Make a inference script that takes in a pdf and returns the FELT the model finds.
