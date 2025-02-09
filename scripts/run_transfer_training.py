@@ -32,34 +32,22 @@ model = TransformerModel(
     num_labels=len(label_to_id)
 )
 
-pretrained_dict = torch.load(base_dir / 'src/models/transformer_model.pth', map_location=device)
+pretrained = torch.load(base_dir / 'src/models/transformer_model.pth', map_location=device)
+pretrained = {k: v for k, v in pretrained.items() if 'classifier' not in k} # Remove classification head  
 
-##### REMOVE CLASSIFIER HEAD #####
+model.load_state_dict(pretrained, strict=False)
+model.transformer.classifier = nn.Linear(model.config.hidden_size, len(label_to_id)).to(device) # Reinitialize classification head
 
-# Remove classifier weights since the label dimensions don't match
-pretrained_dict = {k: v for k, v in pretrained_dict.items() if "classifier" not in k}
-
-# Load only the matching layers
-model.load_state_dict(pretrained_dict, strict=False)
-
-# Reinitialize classification head with the correct number of labels
-model.transformer.classifier = nn.Linear(model.config.hidden_size, len(label_to_id)).to(device)
-
-# TODO: Only freeze the first layers 
-
-"""for param in model.transformer.base_model.parameters():
-    param.requires_grad = False
-"""
-
-layers = ['encoder.layer.6', ]
+layers = ['encoder.layer.6', 'encoder.layer.7', 'encoder.layer.8', 'encoder.layer.9', 'encoder.layer.10', 'encoder.layer.11']
 
 for name, param in model.transformer.base_model.named_parameters():
-    if "encoder.layer.6" in name or "encoder.layer.7" in name or "encoder.layer.8" in name or "encoder.layer.9" in name or "encoder.layer.10" in name or "encoder.layer.11" in name: 
-        param.requires_grad = True  # Allow fine-tuning on just some layers
+    if any(layer in name for layer in layers):
+        param.requires_grad = True  # Fine-tuning just some layers
     else:
         param.requires_grad = False 
-# Check what layers are frozen
+
 for name, param in model.named_parameters():
+    # Print what layers are trainable
     print(f"{name}: {'Trainable' if param.requires_grad else 'Frozen'}")
 
 # Data loading
