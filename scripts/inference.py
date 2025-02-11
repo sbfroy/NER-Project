@@ -2,17 +2,105 @@ import torch
 from transformers import AutoTokenizer
 from src.models.transformer_model import TransformerModel
 from src.utils.config_loader import load_config
-from src.utils.label_mapping import label_to_id, id_to_label
+from src.utils.label_mapping_transfer import label_to_id, id_to_label
 from pathlib import Path
-from pypdf import PdfReader
+from tqdm import tqdm
+import spacy
+import PyPDF2
 
-# TODO: Run a whole pdf on this
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+def get_text(pdf_path):
+    if not pdf_path.exists():
+        raise FileNotFoundError(f'File not found: {pdf_path}')
+    
+    text = ''
+    with open(pdf_path, 'rb') as file:  
+        reader = PyPDF2.PdfReader(file)
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + '\n'
+
+    return text
+
+def get_sent_tokens(text, nlp):
+    if not text:
+        return []
+    
+    doc = nlp(text)
+    sent_tokens = []
+    for sent in doc.sents:
+        sent_text = sent.text.strip()
+        if not sent_text:
+            continue
+        sent_tokens.append([token.text for token in sent])
+
+    return sent_tokens
+
+def get_predictions(sent_tokens, model, tokenizer):
+
+    final_preds = []
+
+    for sent in tqdm(sent_tokens):
+        if not sent:
+            continue
+
+        encoding = tokenizer(
+            sent,
+            is_split_into_words=True,
+            return_offsets_mapping=True,
+            truncation=True,
+            return_tensors='pt',
+            padding='max_length',
+            max_length=config['data']['max_seq_len']
+        )
+
+        inputs = encoding['input_ids'].to(device)
+        masks = encoding['attention_mask'].to(device)
+
+        with torch.no_grad():
+            outputs = model(inputs, masks, labels=None)
+        
+        logits = outputs.logits
+        preds = torch.argmax(logits, dim=-1).squeeze(0).cpu().numpy()
+        tokens = tokenizer.convert_ids_to_tokens(inputs.squeeze(0))
+        pred_labels = [id_to_label.get(pred, 'O') for pred in preds] 
+
+        aligned_preds = []
+        aligned_words = []
+        word_idx = -1
+
+        offsets = encoding['offset_mapping'].squeeze(0)
+
+        # Align predictions with words
+        for j, (token, offset) in enumerate(zip(tokens, offsets)):
+            if offset[0] == 0 and offset[1] != 0: # New word
+                word_idx += 1
+                if word_idx < len(sent):
+                    aligned_words.append(sent[word_idx])
+                    aligned_preds.append(pred_labels[j])
+
+        # Only keep 'B-FELT' and 'I-FELT'
+        felt_tokens = [word for word, label in zip(aligned_words, aligned_preds) if label in ['B-FELT', 'I-FELT']]
+        
+        # Combine 'B-FELT' and 'I-FELT' tokens
+        combined_tokens = []
+        for i, token in enumerate(felt_tokens):
+            if i == 0 or felt_tokens[i-1] == 'B-FELT':
+                combined_tokens.append(token)
+            else:
+                combined_tokens[-1] += ' ' + token
+        
+        final_preds.extend(combined_tokens)
+            
+    return list(dict.fromkeys(final_preds)) # Only return unique tokens
 
 base_dir = Path(__file__).parent.parent
 
 config = load_config(base_dir / 'model_params.yaml')
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+nlp = spacy.load('nb_core_news_sm')
 
 tokenizer = AutoTokenizer.from_pretrained(config['model']['model_name'])
 
@@ -22,58 +110,17 @@ model = TransformerModel(
     num_labels=len(label_to_id)
 )
 
-model.load_state_dict(torch.load(base_dir / 'src' /'models' / 'transformer_model.pth', map_location=device)) 
+model_path = base_dir / 'src' /'models' / 'transfer_transformer_model.pth'
+if not model_path.exists():
+    raise FileNotFoundError(f"Model file not found: {model_path}")
+
+model.load_state_dict(torch.load(model_path, map_location=device)) 
 model.to(device)
 model.eval()
 
-def inference(sentence):
+pdf_path = base_dir / 'data/pdfs/4219_201801_Bestemmelser_Solstad_221027.pdf'
 
-    encoding = tokenizer(
-        sentence, 
-        return_tensors="pt", 
-        padding="max_length", 
-        truncation=True, 
-        max_length=config['data']['max_seq_len']
-        )
+text = get_text(pdf_path) # Get text from pdf
+sent_tokens = get_sent_tokens(text, nlp) # Get tokens per sentence
 
-    input_ids = encoding["input_ids"].to(device)
-    attention_mask = encoding["attention_mask"].to(device)
-
-    with torch.no_grad():
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask, labels=None)
-
-    predictions = torch.argmax(outputs.logits, dim=-1).squeeze(0).tolist()
-    
-    tokens = tokenizer.convert_ids_to_tokens(input_ids.squeeze(0))
-
-    predicted_labels = [id_to_label.get(pred, "O") for pred in predictions]  # "O" for unknown
-
-    return list(zip(tokens, predicted_labels))
-
-# Get text from pdf
-#pdf_text = []
-"""reader = PdfReader(base_dir / 'data/pdfs/EH_detaljregulering_for_kjetså_massetak.pdf')
-for page in reader.pages[1]:
-    text = page.extract_text()
-    pdf_text.append(text)
-page = reader.pages[1]
-pdf_text = page.extract_text()
-
-"pdf_text = " ".join(pdf_text)"
-all_sentences = pdf_text.split('.')
-
-for sentence in all_sentences:
-    predictions = inference(sentence)
-
-    print("\n Predictions: ")
-    for token, label in predictions:
-        print(f"{token} --> {label}")
-"""
-
-predictions = inference("f_BLK er felles lekeplass for BKS1-6 og BB1.")
-
-print("\n Predictions: ")
-for token, label in predictions:
-    print(f"{token} --> {label}")
-
-# TODO: Make a inference script that takes in a pdf and returns the FELT the model finds.
+preds = get_predictions(sent_tokens, model, tokenizer) 
