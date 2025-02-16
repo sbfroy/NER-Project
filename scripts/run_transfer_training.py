@@ -11,7 +11,7 @@ from transformers import AutoTokenizer
 from src.data.dataset import Dataset
 from src.data.preprocessing import create_df
 from src.utils.config_loader import load_config
-from utils.label_mapping_transfer import label_to_id
+from src.utils.label_mapping_transfer import label_to_id
 from src.utils.seed import seed_everything
 from src.training.train import train_model
 from src.models.transformer_model import TransformerModel
