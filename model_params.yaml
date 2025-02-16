@@ -15,7 +15,7 @@ training:
     learning_rate: 3.3789593885367876e-06
 
 data:
-  max_seq_len: 52
+  max_seq_len: 48 # 52
   
 general:
   seed: 42
