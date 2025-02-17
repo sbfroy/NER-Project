@@ -1,12 +1,13 @@
 import torch
 from torch.utils.data import DataLoader
 from sklearn.metrics import classification_report
-from src.utils.label_mapping import id_to_label
+from src.utils.label_mapping_transfer import id_to_label
 from tqdm import tqdm
 import optuna
+import wandb
 
 def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, trial=None,
-                verbose=True):
+                verbose=True, wandb_log=False):
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -88,17 +89,27 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         if verbose:
             print(f'Epoch {epoch+1}/{num_epochs} | '
                 f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}')
+    
+        if wandb_log:
+            wandb.log({
+                'epoch': epoch,
+                'train_loss': train_loss,
+                'val_loss': val_loss,
+                'precision': class_report['macro avg']['precision'],
+                'recall': class_report['macro avg']['recall'],
+                'f1-score': class_report['macro avg']['f1-score']
+            })
+
+        # Optuna
+        if trial:
+            trial.report(val_loss, step=epoch)
+            if trial.should_prune():
+                raise optuna.exceptions.TrialPruned()
+            
+    print('Training says SUUIII!')
 
     if verbose:       
         print("\n Final classification report:")
         print(classification_report(all_labels, all_preds, zero_division=0, digits=4))
-
-        print('Training says SUUIII!')
-
-    # Optuna
-    if trial:
-        trial.report(val_loss, step=epoch)
-        if trial.should_prune():
-            raise optuna.exceptions.TrialPruned()
 
     return history
