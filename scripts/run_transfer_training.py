@@ -9,7 +9,7 @@ from transformers import AutoTokenizer
 from src.data.dataset import Dataset
 from src.data.preprocessing import create_df
 from src.utils.config_loader import load_config
-from src.utils.label_mapping_transfer import label_to_id
+from src.utils.label_mapping_transfer import label_to_id, id_to_label
 from src.utils.seed import seed_everything
 from src.training.train import train_model
 from src.models.transformer_model import TransformerModel
@@ -24,11 +24,6 @@ seed_everything(config['general']['seed'])
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-wandb.init(
-    project='planaid',
-    config=config
-)
-
 tokenizer = AutoTokenizer.from_pretrained(config['model']['model_name'])
 
 model = TransformerModel(
@@ -37,23 +32,27 @@ model = TransformerModel(
     num_labels=len(label_to_id)
 )
 
-pretrained = torch.load(base_dir / 'src/models/transformer_model.pth', map_location=device)
-#pretrained = {k: v for k, v in pretrained.items() if 'classifier' not in k} # Remove classification head  
-
+pretrained = torch.load(base_dir / 'src/models/transformer_model.pth', map_location=device) 
 model.load_state_dict(pretrained, strict=False)
-#model.transformer.classifier = nn.Linear(model.config.hidden_size, len(label_to_id)).to(device) # Reinitialize classification head
 
-"""layers = ['encoder.layer.6', 'encoder.layer.7', 'encoder.layer.8', 'encoder.layer.9', 'encoder.layer.10', 'encoder.layer.11']
+"""# Layer freezing
+layers = ['encoder.layer.6', 'encoder.layer.7', 'encoder.layer.8', 'encoder.layer.9', 'encoder.layer.10', 'encoder.layer.11']
 
 for name, param in model.transformer.base_model.named_parameters():
     if any(layer in name for layer in layers):
         param.requires_grad = True  # Fine-tune just some layers
     else:
         param.requires_grad = False 
+"""
 
+# Track of what layers are frozen
+frozen_layers = []
 for name, param in model.named_parameters():
-    # Print what layers are trainable
-    print(f"{name}: {'Trainable' if param.requires_grad else 'Frozen'}")"""
+    if not param.requires_grad:
+        frozen_layers.append(name)
+
+if not frozen_layers:
+    frozen_layers = 'None'
 
 # Data loading
 train_df = create_df(base_dir / 'data/my_data/regplans-train.conllu')
@@ -64,6 +63,19 @@ val_dataset = Dataset(val_df, tokenizer, config['data']['max_seq_len'])
 
 optimizer = optim.AdamW(model.parameters(), lr=config['training']['transfer']['learning_rate'])
 
+# Store params
+wandb.init(
+    project='NER_Exploration',
+    config={
+        'model_name': config['model']['model_name'],
+        'dropout': config['model']['dropout'],
+        'learning_rate': config['training']['transfer']['learning_rate'],
+        'batch_size': config['training']['transfer']['batch_size'],
+        'num_epochs': config['training']['transfer']['num_epochs'],
+        'frozen_layers': frozen_layers
+    }
+)
+
 train_model(
     model = model,
     train_dataset = train_dataset,
@@ -72,6 +84,7 @@ train_model(
     batch_size = config['training']['transfer']['batch_size'],
     num_epochs = config['training']['transfer']['num_epochs'],
     device = device,
+    id_to_label=id_to_label,
     wandb_log=True
 )
 
