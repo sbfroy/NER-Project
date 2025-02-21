@@ -6,7 +6,7 @@ training:
 
   general:
     batch_size: 32
-    num_epochs: 2
+    num_epochs: 15
     learning_rate: 3.3789593885367876e-05
 
   transfer:
