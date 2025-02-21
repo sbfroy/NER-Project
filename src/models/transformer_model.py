@@ -1,5 +1,7 @@
 import torch.nn as nn
-from transformers import AutoModelForTokenClassification, AutoConfig
+from transformers import AutoModelForTokenClassification, AutoConfig, logging
+
+logging.set_verbosity_error()
 
 class TransformerModel(nn.Module):
     def __init__(self, model_name, dropout, num_labels):
