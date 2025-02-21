@@ -1,13 +1,20 @@
 import torch
-from torch.utils.data import DataLoader
+from torchmetrics import F1Score, Precision, Recall
+from src.utils.metrics import ExactMatchAccuracy
 from sklearn.metrics import classification_report
-from src.utils.label_mapping_transfer import id_to_label
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 import optuna
 import wandb
 
-def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, trial=None,
-                verbose=True, wandb_log=False):
+def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, id_to_label, 
+                trial=None, verbose=True, wandb_log=False):
+    
+    # Initialize torchmetrics
+    f1 = F1Score(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
+    precision = Precision(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
+    recall = Recall(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
+    exact_match_acc = ExactMatchAccuracy().to(device)
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -15,16 +22,11 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
 
     model.to(device)
 
-    history = {
-        'train_loss': [],
-        'val_loss': [],
-        'class_report': []
-    }
+    best_f1 = 0
 
     for epoch in range(num_epochs):
 
-        model.train() ## training mode ##
-
+        model.train() # Training mode
         train_loss = 0
 
         for batch in tqdm(train_loader, desc='train', leave=False, ncols=75, disable=not verbose):
@@ -36,6 +38,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
             optimizer.zero_grad()
             outputs = model(inputs, masks, labels) # Forward pass
             loss = outputs.loss
+
             loss.backward()
             optimizer.step()  
 
@@ -43,12 +46,11 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         
         train_loss /= len(train_loader) 
 
-        model.eval() ## evaluation mode ##
-
+        model.eval() # Evaluation mode
         val_loss = 0
         all_preds, all_labels = [], []
 
-        with torch.no_grad():
+        with torch.inference_mode():
             for batch in tqdm(val_loader, desc='val', leave=False, ncols=75, disable=not verbose):
 
                 inputs = batch['input_ids'].to(device)
@@ -59,7 +61,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 loss = outputs.loss
                 logits = outputs.logits
 
-                preds = torch.argmax(logits, dim=-1) # Get the most likely entity class idx
+                preds = torch.argmax(logits, dim=-1) # Most likely entity class idx
                 preds = preds.view(-1).cpu().numpy() # Flatten the tensor
                 labels = labels.view(-1).cpu().numpy()
 
@@ -74,42 +76,52 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         
         val_loss /= len(val_loader)
 
-        history['train_loss'].append(train_loss)
-        history['val_loss'].append(val_loss)
+        exact_match_acc.update(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device))
+        f1_score = f1(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        precision_score = precision(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        recall_score = recall(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        exact_match_score = exact_match_acc.compute().item()
 
         # ids to labels
         all_labels = [id_to_label[label] for label in all_labels] 
         all_preds = [id_to_label[pred] for pred in all_preds] 
 
-        class_report = classification_report(
-            all_labels, all_preds, zero_division=0, digits=4, output_dict=True
-        )
-        history['class_report'].append(class_report)
+        class_report_dict = classification_report(all_labels, all_preds, zero_division=0, digits=4, output_dict=True)
+
+        if f1_score > best_f1:
+            best_f1 = f1_score
 
         if verbose:
             print(f'Epoch {epoch+1}/{num_epochs} | '
-                f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}')
+                f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
+                f'F1-score: {f1_score:.4f}, Precision: {precision_score:.4f}, Recall: {recall_score:.4f}, '
+                f'Exact match accuracy: {exact_match_score:.4f}')
     
         if wandb_log:
             wandb.log({
-                'epoch': epoch,
+                'epoch': epoch + 1,
                 'train_loss': train_loss,
                 'val_loss': val_loss,
-                'precision': class_report['macro avg']['precision'],
-                'recall': class_report['macro avg']['recall'],
-                'f1-score': class_report['macro avg']['f1-score']
+                'f1-score': f1_score,
+                'precision': precision_score,
+                'recall': recall_score,
+                'exact_match_accuracy': exact_match_score
             })
+
+            # Logs classification report as a table
+            table = wandb.Table(columns=['Entitiy', 'Precision', 'Recall', 'F1-Score', 'Support'])
+            for entity, metrics in class_report_dict.items():
+                if entity in {'accuracy', 'macro_avg', 'weighted_avg'}:
+                    continue
+                table.add_data(entity, metrics['precision'], metrics['recall'], metrics['f1-score'], metrics['support'])
+            wandb.log({"classification_report": table})
 
         # Optuna
         if trial:
-            trial.report(val_loss, step=epoch)
+            trial.report(f1_score, step=epoch)
             if trial.should_prune():
                 raise optuna.exceptions.TrialPruned()
             
     print('Training says SUUIII!')
-
-    if verbose:       
-        print("\n Final classification report:")
-        print(classification_report(all_labels, all_preds, zero_division=0, digits=4))
-
-    return history
+    wandb.finish()
+    return best_f1 
