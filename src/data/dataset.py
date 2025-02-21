@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset
-from src.utils.label_mapping_transfer import label_to_id
+from src.utils.label_mapping_regplans import label_to_id
 
 class Dataset(Dataset):
     def __init__(self, df, tokenizer, max_len):
