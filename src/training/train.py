@@ -98,6 +98,13 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 f'Exact match accuracy: {exact_match_score:.4f}')
     
         if wandb_log:
+            # Logs classification report as a table
+            table = wandb.Table(columns=['Entity', 'Precision', 'Recall', 'F1-Score', 'Support'])
+            for entity, metrics in class_report_dict.items():
+                if entity in {'accuracy', 'macro avg', 'weighted avg'}:
+                    continue
+                table.add_data(entity, metrics['precision'], metrics['recall'], metrics['f1-score'], metrics['support'])
+
             wandb.log({
                 'epoch': epoch + 1,
                 'train_loss': train_loss,
@@ -105,16 +112,9 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 'f1-score': f1_score,
                 'precision': precision_score,
                 'recall': recall_score,
-                'exact_match_accuracy': exact_match_score
+                'exact_match_accuracy': exact_match_score,
+                'classification_report': table
             })
-
-            # Logs classification report as a table
-            table = wandb.Table(columns=['Entitiy', 'Precision', 'Recall', 'F1-Score', 'Support'])
-            for entity, metrics in class_report_dict.items():
-                if entity in {'accuracy', 'macro_avg', 'weighted_avg'}:
-                    continue
-                table.add_data(entity, metrics['precision'], metrics['recall'], metrics['f1-score'], metrics['support'])
-            wandb.log({"classification_report": table})
 
         # Optuna
         if trial:
