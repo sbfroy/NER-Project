@@ -50,7 +50,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         val_loss = 0
         all_preds, all_labels = [], []
 
-        with torch.inference_mode():
+        with torch.no_grad():
             for batch in tqdm(val_loader, desc='val', leave=False, ncols=75, disable=not verbose):
 
                 inputs = batch['input_ids'].to(device)
