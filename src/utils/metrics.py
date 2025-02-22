@@ -4,6 +4,8 @@ from torchmetrics import Metric
 class ExactMatchAccuracy(Metric):
     # Computes how often the model predicts the WHOLE entity
 
+    # TODO: Maybe dont apply to O labels
+
     def __init__(self):
         super().__init__()
         self.add_state('correct', default=torch.tensor(0), dist_reduce_fx='sum')
