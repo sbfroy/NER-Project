@@ -1,5 +1,6 @@
 conllu
 torch
+torchmetrics
 transformers
 scikit-learn
 optuna
