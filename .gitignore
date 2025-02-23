@@ -3,5 +3,5 @@
 *.pyc
 __pycache__/
 *.pth
-*.db
+/optuna_studies
 /wandb
