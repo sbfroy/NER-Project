@@ -38,9 +38,10 @@ val_dataset = Dataset(val_df, tokenizer, config['data']['max_seq_len'])
 def objective(trial):
 
     # params to tune
-    dropout = trial.suggest_float('dropout', 0.1, 0.4, step=0.05)
+    dropout = trial.suggest_float('dropout', 0.1, 0.5, step=0.05)
     learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-4, log=True)
-    batch_size = trial.suggest_int('batch_size', 8, 32, step=8)
+    batch_size = trial.suggest_int('batch_size', 8, 32, step=4)
+    weight_decay = trial.suggest_float('weight_decay', 0.01, 0.2, log=True)
 
     model = TransformerModel(
         model_name=config['model']['model_name'], 
@@ -48,7 +49,11 @@ def objective(trial):
         num_labels=len(label_to_id)
     )
 
-    optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
+    optimizer = optim.AdamW(
+        model.parameters(), 
+        lr=learning_rate,
+        weight_decay=weight_decay
+    )
 
     best_f1 = train_model(
         model = model,
@@ -67,11 +72,11 @@ def objective(trial):
 
 # Optuna study
 study = optuna.create_study(
-    study_name='NER_Study',
+    study_name='nb-bert-base',
     direction='maximize', 
     sampler=optuna.samplers.TPESampler(seed=config['general']['seed']),
     load_if_exists=True, 
-    storage='sqlite:///NER_Study.db'
+    storage='sqlite:///nb-bert-base.db'
 )
 
-study.optimize(objective, n_trials=50, show_progress_bar=True)
+study.optimize(objective, n_trials=100, show_progress_bar=True)
