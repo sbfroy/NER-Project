@@ -1,13 +1,14 @@
 model:
-  model_name: 'NbAiLab/nb-bert-base' # 'ltg/norbert2'
-  dropout: 0.4 # 0.45 
+  model_name: 'NbAiLab/nb-bert-base'
+  dropout: 0.45
 
 training:
 
   general:
-    batch_size: 32
-    num_epochs: 15
-    learning_rate: 3.3789593885367876e-05
+    batch_size: 12
+    num_epochs: 12
+    learning_rate: 2.6587543983272713e-06
+    weight_decay: 0.017322667470546258
 
   transfer:
     batch_size: 16
