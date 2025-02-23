@@ -2,41 +2,45 @@ import torch
 from transformers import AutoTokenizer
 from src.models.transformer_model import TransformerModel
 from src.utils.config_loader import load_config
-from src.utils.label_mapping_transfer import label_to_id, id_to_label
+from src.utils.label_mapping_regplans import label_to_id, id_to_label
 from pathlib import Path
 from tqdm import tqdm
 import spacy
-import PyPDF2
+import pdfplumber
+import re
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def get_text(pdf_path):
-    if not pdf_path.exists():
-        raise FileNotFoundError(f'File not found: {pdf_path}')
-    
-    text = ''
-    with open(pdf_path, 'rb') as file:  
-        reader = PyPDF2.PdfReader(file)
-        for page in reader.pages:
+    # Extracts text from a PDF 
+    text = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
             page_text = page.extract_text()
             if page_text:
-                text += page_text + '\n'
+                # Removes big unnecessary whitespaces
+                clean_text = re.sub(r'\s+', ' ', page_text).strip()
+                text.append(clean_text) 
 
-    return text
+    return ' '.join(text) # Returns text as one big string
 
-def get_sent_tokens(text, nlp):
-    if not text:
-        return []
-    
+def process_text_with_spacy(text, nlp):
+    # Splits text into sentences and tokenizes them
+
     doc = nlp(text)
-    sent_tokens = []
-    for sent in doc.sents:
-        sent_text = sent.text.strip()
-        if not sent_text:
-            continue
-        sent_tokens.append([token.text for token in sent])
+    sentences = []
 
-    return sent_tokens
+    for sent in doc.sents:
+        tokens = []
+        for token in sent:
+            # Further split tokens (punctuations) to separate symbols
+            split_tokens = re.findall(r"\w+(?:[-/.]\w+)*|[^\w\s]", token.text, re.UNICODE)
+            for sub_token in split_tokens:
+                tokens.append(sub_token)
+
+        sentences.append(tokens) # Each sent is a list of tokens
+
+    return sentences # Returns a list of sentences
 
 def get_predictions(sent_tokens, model, tokenizer):
 
@@ -102,7 +106,7 @@ base_dir = Path(__file__).parent.parent
 
 config = load_config(base_dir / 'model_params.yaml')
 
-nlp = spacy.load('nb_core_news_sm')
+nlp = spacy.load('nb_core_news_md')
 
 tokenizer = AutoTokenizer.from_pretrained(config['model']['model_name'])
 
@@ -112,7 +116,7 @@ model = TransformerModel(
     num_labels=len(label_to_id)
 )
 
-model_path = base_dir / 'src' /'models' / 'transfer_transformer_model.pth'
+model_path = base_dir / 'src' /'models' / 'nb-bert-base.pth'
 if not model_path.exists():
     raise FileNotFoundError(f"Model file not found: {model_path}")
 
@@ -120,9 +124,11 @@ model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device)
 model.eval()
 
-pdf_path = base_dir / 'data/pdfs/4219_201801_Bestemmelser_Solstad_221027.pdf'
+pdf_path = base_dir / 'data/pdfs/1555 Reguleringsbestemmelser.pdf'
 
 text = get_text(pdf_path) # Get text from pdf
-sent_tokens = get_sent_tokens(text, nlp) # Get tokens per sentence
+sent_tokens = process_text_with_spacy(text, nlp) # Get tokens per sentence
 
 preds = get_predictions(sent_tokens, model, tokenizer) 
+
+print(preds)
