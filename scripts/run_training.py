@@ -73,6 +73,7 @@ wandb.init(
         'learning_rate': config['training']['general']['learning_rate'],
         'batch_size': config['training']['general']['batch_size'],
         'num_epochs': config['training']['general']['num_epochs'],
+        'weight_decay': config['training']['general']['weight_decay'],
         'frozen_layers': frozen_layers
     }
 )
