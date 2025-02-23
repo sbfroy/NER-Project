@@ -58,7 +58,11 @@ val_df = create_df(base_dir / 'data/my_data/regplans-dev.conllu')
 train_dataset = Dataset(train_df, tokenizer, config['data']['max_seq_len'])
 val_dataset = Dataset(val_df, tokenizer, config['data']['max_seq_len'])
 
-optimizer = optim.AdamW(model.parameters(), lr=config['training']['general']['learning_rate'])
+optimizer = optim.AdamW(
+    model.parameters(), 
+    lr=config['training']['general']['learning_rate'],
+    weight_decay=config['training']['general']['weight_decay']
+)
 
 # Store params
 wandb.init(
