@@ -7,6 +7,8 @@ from tqdm import tqdm
 import optuna
 import wandb
 
+# TODO: Remove ExactMatchAccuracy
+
 def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, id_to_label, 
                 trial=None, verbose=True, wandb_log=False):
     
