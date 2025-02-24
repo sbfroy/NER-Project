@@ -1,6 +1,7 @@
 import torch
 from torchmetrics import F1Score, Precision, Recall
 from sklearn.metrics import classification_report
+from src.utils.metrics import SpanF1
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import optuna
@@ -13,6 +14,8 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
     f1 = F1Score(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
     precision = Precision(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
     recall = Recall(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
+
+    span_f1_metric = SpanF1(id_to_label).to(device)
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -48,6 +51,8 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         val_loss = 0
         all_preds, all_labels = [], []
 
+        span_f1_metric.reset() 
+
         with torch.no_grad():
             for batch in tqdm(val_loader, desc='val', leave=False, ncols=75, disable=not verbose):
 
@@ -70,6 +75,8 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 all_preds.extend(preds)
                 all_labels.extend(labels)
 
+                span_f1_metric.update(preds, labels)
+
                 val_loss += loss.item()
         
         val_loss /= len(val_loader)
@@ -77,6 +84,14 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         f1_score = f1(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
         precision_score = precision(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
         recall_score = recall(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+
+        # Compute span-based metrics
+        span_metrics = span_f1_metric.compute()
+        span_precision, span_recall, span_f1_score = (
+            span_metrics["span_precision"].item(),
+            span_metrics["span_recall"].item(),
+            span_metrics["span_f1"].item(),
+        )
 
         # ids to labels
         all_labels = [id_to_label[label] for label in all_labels] 
@@ -89,8 +104,9 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
 
         if verbose:
             print(f'Epoch {epoch+1}/{num_epochs} | '
-                f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
-                f'F1-score: {f1_score:.4f}, Precision: {precision_score:.4f}, Recall: {recall_score:.4f}')
+                  f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
+                  f'Token Precision: {precision_score:.4f}, Token Recall: {recall_score:.4f}, Token F1: {f1_score:.4f}, '
+                  f'Span Precision: {span_precision:.4f}, Span Recall: {span_recall:.4f}, Span F1: {span_f1_score:.4f}')
     
         if wandb_log:
             # Logs classification report as a table
@@ -107,6 +123,9 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 'f1-score': f1_score,
                 'precision': precision_score,
                 'recall': recall_score,
+                'span_precision': span_precision,
+                'span_recall': span_recall,
+                'span_f1': span_f1_score,
                 'classification_report': table
             })
 
