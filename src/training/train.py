@@ -1,13 +1,10 @@
 import torch
 from torchmetrics import F1Score, Precision, Recall
-from src.utils.metrics import ExactMatchAccuracy
 from sklearn.metrics import classification_report
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import optuna
 import wandb
-
-# TODO: Remove ExactMatchAccuracy
 
 def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_epochs, device, id_to_label, 
                 trial=None, verbose=True, wandb_log=False):
@@ -16,7 +13,6 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
     f1 = F1Score(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
     precision = Precision(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
     recall = Recall(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
-    exact_match_acc = ExactMatchAccuracy().to(device)
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -78,11 +74,9 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         
         val_loss /= len(val_loader)
 
-        exact_match_acc.update(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device))
         f1_score = f1(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
         precision_score = precision(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
         recall_score = recall(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
-        exact_match_score = exact_match_acc.compute().item()
 
         # ids to labels
         all_labels = [id_to_label[label] for label in all_labels] 
@@ -96,8 +90,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         if verbose:
             print(f'Epoch {epoch+1}/{num_epochs} | '
                 f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
-                f'F1-score: {f1_score:.4f}, Precision: {precision_score:.4f}, Recall: {recall_score:.4f}, '
-                f'Exact match accuracy: {exact_match_score:.4f}')
+                f'F1-score: {f1_score:.4f}, Precision: {precision_score:.4f}, Recall: {recall_score:.4f}')
     
         if wandb_log:
             # Logs classification report as a table
@@ -114,7 +107,6 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 'f1-score': f1_score,
                 'precision': precision_score,
                 'recall': recall_score,
-                'exact_match_accuracy': exact_match_score,
                 'classification_report': table
             })
 
