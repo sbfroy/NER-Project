@@ -74,9 +74,12 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         
         val_loss /= len(val_loader)
 
-        precision_score = precision(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
-        recall_score = recall(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
-        f1_score = f1(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        all_preds_tensor = torch.tensor(all_preds, device=device, dtype=torch.int64)
+        all_labels_tensor = torch.tensor(all_labels, device=device, dtype=torch.int64)
+
+        precision_score = precision(all_preds_tensor, all_labels_tensor).item()
+        recall_score = recall(all_preds_tensor, all_labels_tensor).item()
+        f1_score = f1(all_preds_tensor, all_labels_tensor).item()
 
         # ids to labels
         all_labels = [id_to_label[label] for label in all_labels] 
@@ -104,7 +107,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 'epoch': epoch + 1,
                 'train_loss': train_loss,
                 'val_loss': val_loss,
-                'recision': precision_score,
+                'precision': precision_score,
                 'recall': recall_score,
                 'f1': f1_score,
                 'classification_report': table
