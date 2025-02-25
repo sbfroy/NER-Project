@@ -1,9 +1,7 @@
 import torch
 from torchmetrics import Metric
 
-# Custom metric to compute F1-score for entity spans
-
-class SpanF1(Metric):
+class SpanF1(Metric): # Custom metric to compute F1-score for entity spans
     def __init__(self, id_to_label):
         super().__init__()
         self.id_to_label = id_to_label
@@ -62,3 +60,4 @@ class SpanF1(Metric):
             'span_recall': recall,
             'span_f1': f1
         }
+    
