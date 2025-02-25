@@ -39,7 +39,7 @@ def objective(trial):
 
     # params to tune
     dropout = trial.suggest_float('dropout', 0.1, 0.5, step=0.05)
-    learning_rate = trial.suggest_float('learning_rate', 1e-6, 1e-4, log=True)
+    learning_rate = trial.suggest_float('learning_rate', 3e-6, 1e-4, log=True)
     batch_size = trial.suggest_int('batch_size', 8, 32, step=4)
     weight_decay = trial.suggest_float('weight_decay', 0.01, 0.2, log=True)
 
@@ -55,7 +55,7 @@ def objective(trial):
         weight_decay=weight_decay
     )
 
-    best_f1 = train_model(
+    best_token_f1 = train_model(
         model = model,
         train_dataset = train_dataset,
         val_dataset = val_dataset,
@@ -68,7 +68,7 @@ def objective(trial):
         verbose=False
     )
 
-    return best_f1
+    return best_token_f1
 
 # Optuna study
 study = optuna.create_study(
@@ -79,4 +79,4 @@ study = optuna.create_study(
     storage='sqlite:///nb-bert-base.db'
 )
 
-study.optimize(objective, n_trials=100, show_progress_bar=True)
+study.optimize(objective, n_trials=50, show_progress_bar=True)
