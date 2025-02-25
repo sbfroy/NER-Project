@@ -23,7 +23,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
 
     model.to(device)
 
-    best_f1 = 0
+    best_token_f1 = 0
 
     for epoch in range(num_epochs):
 
@@ -81,16 +81,16 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         
         val_loss /= len(val_loader)
 
-        f1_score = f1(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
-        precision_score = precision(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
-        recall_score = recall(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        token_precision_score = precision(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        token_recall_score = recall(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
+        token_f1_score = f1(torch.tensor(all_preds, device=device), torch.tensor(all_labels, device=device)).item()
 
         # Compute span-based metrics
         span_metrics = span_f1_metric.compute()
         span_precision, span_recall, span_f1_score = (
-            span_metrics["span_precision"].item(),
-            span_metrics["span_recall"].item(),
-            span_metrics["span_f1"].item(),
+            span_metrics['span_precision'].item(),
+            span_metrics['span_recall'].item(),
+            span_metrics['span_f1'].item(),
         )
 
         # ids to labels
@@ -99,13 +99,13 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
 
         class_report_dict = classification_report(all_labels, all_preds, zero_division=0, digits=4, output_dict=True)
 
-        if f1_score > best_f1:
-            best_f1 = f1_score
+        if token_f1_score > best_token_f1:
+            best_token_f1 = token_f1_score
 
         if verbose:
             print(f'Epoch {epoch+1}/{num_epochs} | '
                   f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
-                  f'Token Precision: {precision_score:.4f}, Token Recall: {recall_score:.4f}, Token F1: {f1_score:.4f}, '
+                  f'Token Precision: {token_precision_score:.4f}, Token Recall: {token_recall_score:.4f}, Token F1: {token_f1_score:.4f}, '
                   f'Span Precision: {span_precision:.4f}, Span Recall: {span_recall:.4f}, Span F1: {span_f1_score:.4f}')
     
         if wandb_log:
@@ -120,9 +120,9 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 'epoch': epoch + 1,
                 'train_loss': train_loss,
                 'val_loss': val_loss,
-                'f1-score': f1_score,
-                'precision': precision_score,
-                'recall': recall_score,
+                'token_precision': token_precision_score,
+                'token_recall': token_recall_score,
+                'token_f1': token_f1_score,
                 'span_precision': span_precision,
                 'span_recall': span_recall,
                 'span_f1': span_f1_score,
@@ -131,10 +131,10 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
 
         # Optuna
         if trial:
-            trial.report(f1_score, step=epoch)
+            trial.report(token_f1_score, step=epoch)
             if trial.should_prune():
                 raise optuna.exceptions.TrialPruned()
             
     print('Training says SUUIII!')
     wandb.finish()
-    return best_f1 
+    return best_token_f1 
