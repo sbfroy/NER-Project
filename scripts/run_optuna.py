@@ -55,7 +55,7 @@ def objective(trial):
         weight_decay=weight_decay
     )
 
-    best_token_f1 = train_model(
+    best_f1 = train_model(
         model = model,
         train_dataset = train_dataset,
         val_dataset = val_dataset,
@@ -68,7 +68,7 @@ def objective(trial):
         verbose=False
     )
 
-    return best_token_f1
+    return best_f1
 
 # Optuna study
 study = optuna.create_study(
