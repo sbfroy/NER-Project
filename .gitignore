@@ -5,3 +5,4 @@ __pycache__/
 *.pth
 /optuna_studies
 /wandb
+*.md
