@@ -1,6 +1,7 @@
 import torch
 from torchmetrics import F1Score, Precision, Recall
 from sklearn.metrics import classification_report
+from src.utils.metrics import SpanAcc
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import optuna
@@ -13,6 +14,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
     f1 = F1Score(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
     precision = Precision(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
     recall = Recall(task='multiclass', num_classes=len(id_to_label), average='macro').to(device)
+    span_acc = SpanAcc(id_to_label).to(device)
 
     # Data loaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -71,6 +73,8 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 all_labels.extend(labels)
 
                 val_loss += loss.item()
+
+                span_acc.update(torch.tensor(preds, device=device), torch.tensor(labels, device=device))
         
         val_loss /= len(val_loader)
 
@@ -80,6 +84,10 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         precision_score = precision(all_preds_tensor, all_labels_tensor).item()
         recall_score = recall(all_preds_tensor, all_labels_tensor).item()
         f1_score = f1(all_preds_tensor, all_labels_tensor).item()
+
+        # Compute Span Accuracy
+        span_accuracy = span_acc.compute().item()
+        span_acc.reset() 
 
         # ids to labels
         all_labels = [id_to_label[label] for label in all_labels] 
@@ -93,7 +101,8 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
         if verbose:
             print(f'Epoch {epoch+1}/{num_epochs} | '
                   f'Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}, '
-                  f'Precision: {precision_score:.4f}, Recall: {recall_score:.4f}, F1: {f1_score:.4f}')
+                  f'Precision: {precision_score:.4f}, Recall: {recall_score:.4f}, '
+                  f'F1: {f1_score:.4f}, Span Acc: {span_accuracy:.4f}')
     
         if wandb_log:
             # Logs classification report as a table
@@ -110,6 +119,7 @@ def train_model(model, train_dataset, val_dataset, optimizer, batch_size, num_ep
                 'precision': precision_score,
                 'recall': recall_score,
                 'f1': f1_score,
+                'span_accuracy': span_accuracy,
                 'classification_report': table
             })
 
