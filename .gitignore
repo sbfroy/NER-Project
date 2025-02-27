@@ -6,3 +6,4 @@ __pycache__/
 /optuna_studies
 /wandb
 *.md
+/spacy
