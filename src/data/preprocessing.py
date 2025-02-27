@@ -15,15 +15,17 @@ def create_df(file_path):
     with open(file_path, 'r', encoding='utf-8') as f:
         sentences = parse(f.read())
 
-    data = {'words': [], 'labels': []}
+    data = {'full_text': [], 'words': [], 'labels': []}
 
     for sentence in sentences:
 
         # TODO: Add some error handling if missing data
 
+        full_text = sentence.metadata['text'] # Extract the full text
         words = [word['form'] for word in sentence] # Extract the words
         labels = [word['misc']['name'] for word in sentence] # Extract the entity labels
 
+        data['full_text'].append(full_text)
         data['words'].append(words)
         data['labels'].append(labels)
 
