@@ -1,6 +1,7 @@
 import torch
 from torchmetrics import Precision, Recall, F1Score
 from src.utils.metrics import SpanAcc
+from sklearn.metrics import classification_report
 from src.utils.label_mapping_regplans import id_to_label
 
 def evaluate(preds, labels):
@@ -21,9 +22,15 @@ def evaluate(preds, labels):
     span_acc_score = span_acc.compute().item()
     span_acc.reset()
 
+    # Classification report
+    preds = [id_to_label[pred] for pred in preds]
+    labels = [id_to_label[label] for label in labels]
+    report = classification_report(labels, preds, zero_division=0, output_dict=True)
+
     return {
         'precision': precision_score,
         'recall': recall_score,
         'f1': f1_score,
-        'span_acc': span_acc_score
+        'span_acc': span_acc_score,
+        'classification_report': report
     }
