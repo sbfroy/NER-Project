@@ -1161,10 +1161,6 @@
 6	Hittungrovi	_	_	_	_	_	_	_	name=O
 7	.	_	_	_	_	_	_	_	name=O
 
-# sent_id = 001692
-# text = SAMFERDSELSANLEGG
-1	SAMFERDSELSANLEGG	_	_	_	_	_	_	_	name=O
-
 # sent_id = 001185
 # text = TIL DETALJREGULERING HITTUN
 1	TIL	_	_	_	_	_	_	_	name=O
