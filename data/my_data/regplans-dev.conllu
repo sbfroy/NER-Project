@@ -1258,10 +1258,6 @@
 1	d	_	_	_	_	_	_	_	name=O
 2	.	_	_	_	_	_	_	_	name=O
 
-# sent_id = 000414
-# text = o
-1	o	_	_	_	_	_	_	_	name=O
-
 # sent_id = 000124
 # text = Disse bestemmelsene gjelder for planområdet som er vist med planens begrensning på plankartet .
 1	Disse	_	_	_	_	_	_	_	name=O
