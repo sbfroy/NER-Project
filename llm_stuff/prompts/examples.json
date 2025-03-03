@@ -1,0 +1,218 @@
+[
+    {
+        "id": 1,
+        "sentence": "Adkomst til BFS1 og BFS2 skal være fra Solfjellveien .",
+        "entities": [
+            {"word": "BFS1", "label": "B-FELT"},
+            {"word": "BFS2", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 2,
+        "sentence": "På friområdene GF1 - GF3 tillates vanlig skjøtsel av trær og vegetasjon .",
+        "entities": [
+            {"word": "GF1", "label": "B-FELT"},
+            {"word": "-", "label": "I-FELT"},
+            {"word": "GF3", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 3,
+        "sentence": "Bebyggelsestype Innenfor BKS1-BKS6 og BFS2 skal det oppføres flermannsboliger , kjedeboliger og / eller rekkehus .",
+        "entities": [
+            {"word": "BKS1-BKS6", "label": "B-FELT"},
+            {"word": "BFS2", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 4,
+        "sentence": "Sonene med nemningane # 1 , # 2 og # 3 gjeld automatisk freda kulturminne , dyrkingsspor med id .",
+        "entities": [
+            {"word": "#", "label": "B-FELT"},
+            {"word": "1", "label": "I-FELT"},
+            {"word": "#", "label": "B-FELT"},
+            {"word": "2", "label": "I-FELT"},
+            {"word": "#", "label": "B-FELT"},
+            {"word": "3", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 5,
+        "sentence": "2.02 Bygningenepå feltene BBB1 , BFS 1 og BFS2 skal plasseres innenfor byggegrensene som er vist på plankartet .",
+        "entities": [
+            {"word": "BBB1", "label": "B-FELT"},
+            {"word": "BFS", "label": "B-FELT"},
+            {"word": "1", "label": "I-FELT"},
+            {"word": "BFS2", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 6,
+        "sentence": "4.5 Fortau ( o_SF1 - o_SF2 )",
+        "entities": [
+            {"word": "o_SF1", "label": "B-FELT"},
+            {"word": "-", "label": "I-FELT"},
+            {"word": "o_SF2", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 7,
+        "sentence": "Kjøreveg o_SKV1 - o_SKV6 Gang - og sykkelveg o_SGS1 - o_SGS2",
+        "entities": [
+            {"word": "o_SKV1", "label": "B-FELT"},
+            {"word": "-", "label": "I-FELT"},
+            {"word": "o_SKV6", "label": "I-FELT"},
+            {"word": "o_SGS1", "label": "B-FELT"},
+            {"word": "-", "label": "I-FELT"},
+            {"word": "o_SGS2", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 8,
+        "sentence": "Bestemmelsesområde # 6 Bekken kan åpnes .",
+        "entities": [
+            {"word": "#", "label": "B-FELT"},
+            {"word": "6", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 9,
+        "sentence": "B2 med en bolig og en boenhet , B10 med en bolig og to boenheter og B11 med to boliger med inntil to boenheter .",
+        "entities": [
+            {"word": "B2", "label": "B-FELT"},
+            {"word": "B10", "label": "B-FELT"},
+            {"word": "B11", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 10,
+        "sentence": "I hensynssone H550_1 er det ikke tillatt med hogst av trær med diameter over 20 cm i brysthøyde som vist på vedlagte vegetasjonskart .",
+        "entities": [
+            {"word": "H550_1", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 11,
+        "sentence": "Innenfor bestemmelsesområde # 9 kan etableres kastebane for spyd , diskos ol .",
+        "entities": [
+            {"word": "#", "label": "B-FELT"},
+            {"word": "9", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 12,
+        "sentence": "Innenfor området BP2 tillates de nødvendige tiltak for etablering av en badeplass som gir bruksmulighet for alle .",
+        "entities": [
+            {"word": "BP2", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 13,
+        "sentence": "BFS1 og BFS3 kan ha mønehøyde maks 8 , 5 meter over omkringliggende terreng .",
+        "entities": [
+            {"word": "BFS1", "label": "B-FELT"},
+            {"word": "BFS3", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 14,
+        "sentence": "Det skal opparbeides et fysisk skille mellom o_SV1 og omkringliggende arealformål SPA , GF og SGS .",
+        "entities": [
+            {"word": "o_SV1", "label": "B-FELT"},
+            {"word": "SPA", "label": "B-FELT"},
+            {"word": "GF", "label": "B-FELT"},
+            {"word": "SGS", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 15,
+        "sentence": "Eksisterende energianlegg , o_BE , skal være tilgjengelig for drift og vedlikehold .",
+        "entities": [
+            {"word": "o_BE", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 16,
+        "sentence": "Før det vert gjeve mellombels bruksløyve / ferdigattest for ny bueining innanfor felt BKS1 og BFS14 og 15",
+        "entities": [
+            {"word": "BKS1", "label": "B-FELT"},
+            {"word": "BFS14", "label": "B-FELT"},
+            {"word": "og", "label": "I-FELT"},
+            {"word": "15", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 17,
+        "sentence": "BLK2 må opparbeides før midlertidig brukstillatelse for B1-B4 kan gis .",
+        "entities": [
+            {"word": "BLK2", "label": "B-FELT"},
+            {"word": "B1-B4", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 18,
+        "sentence": "5.1 Faresoner ( § 11-8 a ) ( H370_1 )",
+        "entities": [
+            {"word": "H370_1", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 19,
+        "sentence": "Parkeringsplassar ( SPP ) Grøntstruktur , jf . PBL § 12-5 , 2 . ledd nr . 3 - Turveg ( GT )",
+        "entities": [
+            {"word": "SPP", "label": "B-FELT"},
+            {"word": "GT", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 20,
+        "sentence": "Det avsettes 2 biloppstillingsplasser pr . boenhet i BKS1-BKS6 og BFS1-BFS3 .",
+        "entities": [
+            {"word": "BKS1-BKS6", "label": "B-FELT"},
+            {"word": "BFS1-BFS3", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 21,
+        "sentence": "Areal brattere enn 1 : 3 , arealer i gul eller rød sone for henholdsvis støy ( T-1442 ) og luftkvalitet ( T-1520 ) .",
+        "entities": []
+    },
+    {
+        "id": 22,
+        "sentence": "Kryss ved fv . 42",
+        "entities": [
+            {"word": "fv", "label": "B-FELT"},
+            {"word": ".", "label": "I-FELT"},
+            {"word": "42", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 23,
+        "sentence": "For ny bebyggelse i bestemmelsesområde # 7 gjelder i tillegg :",
+        "entities": [
+            {"word": "#", "label": "B-FELT"},
+            {"word": "7", "label": "I-FELT"}
+        ]
+    },
+    {
+        "id": 24,
+        "sentence": "Områdene er felles for byggeområdene BFS1 , BFS2 , BFS3 , BFS4 , BFS5 , B1 , B2 og BKS1 og skal nyttes til lek og opphold / rekreasjon .",
+        "entities": [
+            {"word": "BFS1", "label": "B-FELT"},
+            {"word": "BFS2", "label": "B-FELT"},
+            {"word": "BFS3", "label": "B-FELT"},
+            {"word": "BFS4", "label": "B-FELT"},
+            {"word": "BFS5", "label": "B-FELT"},
+            {"word": "B1", "label": "B-FELT"},
+            {"word": "B2", "label": "B-FELT"},
+            {"word": "BKS1", "label": "B-FELT"}
+        ]
+    },
+    {
+        "id": 25,
+        "sentence": "o Øvrige kommunaltekniske anlegg , o_BKT ( trafo )",
+        "entities": [
+            {"word": "o_BKT", "label": "B-FELT"}
+        ]
+    }
+]
