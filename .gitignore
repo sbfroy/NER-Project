@@ -8,3 +8,4 @@ __pycache__/
 *.md
 /spacy
 /llm_stuff/results
+secrets.yaml
