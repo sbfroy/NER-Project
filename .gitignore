@@ -10,4 +10,4 @@ __pycache__/
 /llm_stuff/results
 secrets.yaml
 to_dos.py
-examples_optimization.py
+run_examples_optimization.py
