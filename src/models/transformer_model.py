@@ -13,7 +13,7 @@ class TransformerModel(nn.Module):
             # Input to classifiaction head
             self.transformer.dropout.p = dropout
 
-    def forward(self, input_ids, attention_mask, labels):
+    def forward(self, input_ids, attention_mask, labels, output_hidden_states=False):
         # Calculates the loss (cross-entropy) when labels is provided.
-        outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask, labels=labels, output_hidden_states=output_hidden_states)
         return outputs
