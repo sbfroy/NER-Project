@@ -7,3 +7,5 @@ optuna
 wandb
 langchain
 langchain-openai
+sentencepiece
+accelerate
