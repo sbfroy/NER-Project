@@ -15,4 +15,4 @@ embedding_plot.ipynb
 embedding_data.pkl
 span_acc.py
 plots.py
-/ga_results
+/llm_stuff/ga_results
