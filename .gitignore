@@ -7,7 +7,6 @@ __pycache__/
 /wandb
 *.md
 /spacy
-/llm_stuff/results
 secrets.yaml
 to_dos.py
 run_examples_optimization.py
