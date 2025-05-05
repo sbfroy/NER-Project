@@ -9,7 +9,6 @@ __pycache__/
 /spacy
 secrets.yaml
 to_dos.py
-run_examples_optimization.py
 embedding_plot.ipynb
 embedding_data.pkl
 span_acc.py
